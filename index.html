@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <title>Test Website</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: #1877f2;
+            margin-top: 0;
+        }
+
+        p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        b {
+            font-weight: bold;
+        }
+
+        nav {
+            background-color: #1877f2;
+            padding: 10px;
+            margin-top: 20px;
+        }
+
+        nav a {
+            color: #fff;
+            text-decoration: none;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        #fpidValue,
+        #ecidValue {
+            color: #1877f2;
+            font-weight: bold;
+        }
+    </style>
+
+    <script src="https://assets.adobedtm.com/6a203c8a0ff8/ef3c44a7537f/launch-52f60d955001-development.min.js"
+        async></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.5/dist/js.cookie.min.js"></script>
+    <script src="adobe-client-data-layer.min.js" async defer></script>
+
+    <script>
+
+        window.adobeDataLayer = window.adobeDataLayer || [];
+
+        // Check if FPID cookie exists to determine if it's a new visit
+
+        // var fpidCookie = document.cookie.match(/(^|;) ?FPID=([^;]*)(;|$)/);
+        var FPID = null;
+        FPID = sessionStorage.getItem('FPID');
+        if (!FPID) {
+            // Generate an ID string based on UUIDv4
+            FPID = generateUUID();
+            // Set the FPID cookie with a duration of 365 days
+            sessionStorage.setItem('FPID', FPID);
+            // document.cookie = "FPID=" + fpid + ";expires=" + getCookieExpiration(365) + ";path=/";
+        }
+
+        window.adobeDataLayer.push(
+            {
+                randomOperand: 'someValue',
+                aep: {
+                    fpid: FPID,
+                }
+            }
+        );
+
+        // Utility function to generate a UUIDv4
+        function generateUUID() {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0,
+                    v = c === 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        }
+
+
+        function deleteAdobeCookies() {
+            var cookies = document.cookie.split(";");
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                var cookieName = cookie.split("=")[0];
+
+                // Check if the cookie name starts with "AMCV_"
+                if (cookieName.indexOf("AMCV_") === 0) {
+                    // Get the value of the ECID cookie
+                    var cookieValue = cookie.split("=")[1];
+
+                    // Remove the "MCMID|" prefix from the cookie value
+                    var ecidValue = cookieValue.replace("MCMID|", "");
+
+                    // Display the ECID value in the specified HTML tag
+                    document.getElementById("ecidValue").innerText = ecidValue;
+
+                    // Delete the cookie by setting an expiration date in the past
+                    document.cookie = cookieName + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
+                }
+                // Check if the cookie name starts with "kndctr_"
+                if (cookieName.indexOf("kndctr_") === 0) {
+                    // Delete the cookie by setting an expiration date in the past
+                    document.cookie = cookieName + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/;";
+                }
+            }
+        }
+
+
+        function getCookieValue(cookieName) {
+            var cookieValue = "";
+            var cookies = document.cookie.split(";");
+            for (var i = 0; i < cookies.length; i++) {
+                var cookie = cookies[i].trim();
+                if (cookie.indexOf(cookieName + "=") === 0) {
+                    cookieValue = cookie.substring(cookieName.length + 1, cookie.length);
+                    break;
+                }
+            }
+            return cookieValue;
+        }
+
+        // Utility function to get cookie expiration date
+        function getCookieExpiration(days) {
+            var now = new Date();
+            now.setTime(now.getTime() + days * 24 * 60 * 60 * 1000);
+            return now.toUTCString();
+        }
+
+    </script>
+
+    <script>
+        function getFPID() {
+            return sessionStorage.getItem('FPID') ?? ""; // Return an empty string if the FPID cookie doesn't exist
+        }
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>This is a test website to implement FPID</h1>
+        <p>Welcome to our website! We use an FPID (First-Party ID) to identify visitors.</p>
+        <p><b>FPID UUIDv4 Value: </b><span id="fpidValue"></span></p>
+        <p><b>ECID Value: </b><span id="ecidValue"></span></p>
+    </div>
+
+    <script>
+        // Update the FPID value dynamically
+        document.getElementById("fpidValue").innerText = getFPID();
+        document.getElementById("ecidValue").innerText = getCookieValue("ECID");
+    </script>
+
+    <script>
+        adobeDataLayer.push({
+            "event": "navigated",
+            "pageName": "index"
+        });
+    </script>
+
+    <script>
+        // setTimeout(deleteAdobeCookies, 2000);
+    </script>
+
+</body>
+
+</html>
